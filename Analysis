@@ -1,0 +1,49 @@
+create view unique_lego_sets1 as
+
+with full_data as (
+
+select 
+count (distinct i.set_num) as appears_in_x_sets,
+p.part_num,
+p.name as part_name
+from 
+
+lego_parts as p 
+
+inner join lego_parts_categories as pc on p.part_cat_id=pc.id
+INNER JOIN lego_inventories_parts as ip on p.part_num = ip.part_num
+inner join lego_inventories as i on ip.inventory_id=i.id
+
+
+group by p.part_num, part_name
+
+having count (distinct i.set_num)=1
+)
+
+select 
+
+s.name as set_name,
+s.year,
+t.name as theme, 
+
+count(fd.part_num) as unique_parts,
+count(p.name) as parts,
+
+count(fd.part_num)/count(p.name) as uniqueness_ratio
+from 
+
+lego_parts as p 
+
+inner join lego_parts_categories as pc on p.part_cat_id=pc.id
+INNER JOIN lego_inventories_parts as ip on p.part_num = ip.part_num
+inner join lego_inventories as i on ip.inventory_id=i.id
+
+inner join lego_sets as s on i.set_num=s.set_num
+left  join lego_themes as t on t.id=s.theme_id
+left join full_data as fd on fd.part_num= p.part_num
+
+group by 
+s.name,
+s.year,
+t.name
+;
